@@ -24,7 +24,7 @@ public static unsafe class UnsafeCode
         return dest;
     }
 
-    // since we cant do ptr + offset in like we can do in C,
+    // since we cant do ptr + offset like we can do in C,
     // we have to come out with another way
     public static byte[] SubArray(byte[] array, int offset, int length)
     {
