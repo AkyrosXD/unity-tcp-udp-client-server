@@ -137,16 +137,6 @@ void* user_thread(void* ptrTcpSocket)
         usleep(50);
     }
     remove_user(&user);
-    P_PlayerLeft playerLeft;
-    playerLeft.id = user.player_id;
-    strcpy(playerLeft.name, user.player_name);
-    for (size_t i = 0; i < user_count; i++)
-    {
-        if (users[i]->has_joined)
-        {
-            send_tcp_packet(users[i], P_PLAYER_LEFT, &playerLeft, sizeof(P_PlayerLeft));
-        }
-    }
     pthread_exit(0);
     return 0;
 }
@@ -167,6 +157,9 @@ void remove_user(ClientUser* user)
     pthread_mutex_lock(&users_mutex);
     if (users != 0 && user_count > 0)
     {
+        P_PlayerLeft playerLeft;
+        playerLeft.id = user->player_id;
+        strcpy(playerLeft.name, user->player_name);
         for (size_t i = 0; i < user_count; i++)
         {
             if (users[i] == user)
@@ -187,7 +180,10 @@ void remove_user(ClientUser* user)
                 users = (ClientUser**)realloc(users, user_count - 1);
                 user_count--;
                 printf("user disconnected: %lld\n", user->player_id);
-                break;
+            }
+            else if (users[i]->has_joined)
+            {
+                send_tcp_packet(users[i], P_PLAYER_LEFT, &playerLeft, sizeof(P_PlayerLeft));
             }
         }
     }
@@ -346,8 +342,7 @@ void handle_udp_packet(int udpSocket, const struct sockaddr* client, socklen_t c
             }
         }
         break;
-
-
+            
     default:
         break;    
     }
