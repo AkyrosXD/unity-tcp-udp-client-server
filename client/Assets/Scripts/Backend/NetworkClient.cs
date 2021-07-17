@@ -41,13 +41,6 @@ public unsafe class NetworkClient
         synchronizationContext = SynchronizationContext.Current;
     }
 
-    private static byte[] SubArray(byte[] array, int offset, int length)
-    {
-        byte[] result = new byte[length];
-        Buffer.BlockCopy(array, offset, result, 0, length);
-        return result;
-    }
-
     public void Start()
     {
         socket.Connect(endPoint);
@@ -83,7 +76,7 @@ public unsafe class NetworkClient
                 packetBase.packet_id = clientBuffer[0];
                 packetBase.length = BitConverter.ToInt16(clientBuffer, sizeof(byte));
                 packet.pbase = packetBase;
-                packet.data = SubArray(clientBuffer, sizeof(PacketBase), packetBase.length - sizeof(PacketBase));
+                packet.data = UnsafeCode.SubArray(clientBuffer, sizeof(PacketBase), packetBase.length - sizeof(PacketBase));
                 synchronizationContext.Post((object state) => { HandlePacket(packet); }, null);
             }
             else if (bytesReceived < 0)
@@ -142,7 +135,7 @@ public unsafe class NetworkClient
                     {
                         continue;
                     }
-                    packet.data = SubArray(clientBuffer, sizeof(PacketBase), packet.pbase.length - sizeof(PacketBase));
+                    packet.data = UnsafeCode.SubArray(clientBuffer, sizeof(PacketBase), packet.pbase.length - sizeof(PacketBase));
                     synchronizationContext.Post((object state) => { HandlePacket(packet); }, null);
                     clientBuffer = null;
                     offset = 0;
